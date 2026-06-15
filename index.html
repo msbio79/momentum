@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>운동량과 충격량 시뮬레이션</title>
+    <!-- Google Fonts: Inter & Outfit for premium look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="dark-theme"> <!-- Default dark theme for stunning premium look -->
+    <div class="app-container">
+
+        <!-- Sidebar Menu -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="title-group">
+                    <span class="badge">물리학</span>
+                    <h1>운동량 & 충격량</h1>
+                </div>
+                <div class="header-actions">
+                    <!-- Theme Toggle Button -->
+                    <button class="icon-btn" id="themeToggleBtn" title="테마 변경" aria-label="테마 변경">
+                        <svg class="sun-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor"
+                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="moon-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor"
+                            stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                            style="display: none;">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                    <!-- Sidebar Collapse Button -->
+                    <button class="icon-btn" id="collapseBtn" title="메뉴 접기" aria-label="메뉴 접기">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2"
+                            fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                            <polyline points="12 5 7 12 12 19"></polyline>
+                            <line x1="7" y1="12" x2="18" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Simulation Mode Selection -->
+                <div class="control-group">
+                    <label class="group-title">시뮬레이션 모드</label>
+                    <div class="segmented-control">
+                        <button class="segment-btn active" data-mode="wall">
+                            <span>벽과의 충돌</span>
+                        </button>
+                        <button class="segment-btn" data-mode="two-body">
+                            <span>두 물체의 충돌</span>
+                        </button>
+                        <button class="segment-btn" data-mode="drop">
+                            <span>자유 낙하 충돌</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Parameters for Mode: Wall -->
+                <div class="mode-params" id="wallParams">
+                    <div class="control-group">
+                        <div class="param-header">
+                            <label for="wallMass">물체 질량 (m)</label>
+                            <span class="param-val" id="wallMassVal">5 kg</span>
+                        </div>
+                        <div class="slider-wrapper">
+                            <button class="step-btn minus" onclick="stepValue('wallMass', -1)">-</button>
+                            <input type="range" id="wallMass" min="1" max="10" value="5" class="slider">
+                            <button class="step-btn plus" onclick="stepValue('wallMass', 1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="param-header">
+                            <label for="wallVel">초기 속도 (v)</label>
+                            <span class="param-val" id="wallVelVal">6 m/s</span>
+                        </div>
+                        <div class="slider-wrapper">
+                            <button class="step-btn minus" onclick="stepValue('wallVel', -1)">-</button>
+                            <input type="range" id="wallVel" min="1" max="10" value="6" class="slider">
+                            <button class="step-btn plus" onclick="stepValue('wallVel', 1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="param-header">
+                            <label for="wallElasticity">반발 계수 (e)</label>
+                            <span class="param-val" id="wallElasticityVal">0.8</span>
+                        </div>
+                        <div class="slider-wrapper">
+                            <button class="step-btn minus" onclick="stepValueFloat('wallElasticity', -0.1)">-</button>
+                            <input type="range" id="wallElasticity" min="0" max="1" step="0.1" value="0.8"
+                                class="slider">
+                            <button class="step-btn plus" onclick="stepValueFloat('wallElasticity', 0.1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameters for Mode: Two Objects -->
+                <div class="mode-params" id="twoBodyParams" style="display: none;">
+                    <div class="control-frame obj-a-frame">
+                        <div class="frame-header-title obj-a-title">
+                            <span class="dot"></span>
+                            <span>물체 A (파란색)</span>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="objAMass">질량 (m<sub>A</sub>)</label>
+                                <span class="param-val" id="objAMassVal">6 kg</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('objAMass', -1)">-</button>
+                                <input type="range" id="objAMass" min="1" max="10" value="6" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('objAMass', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="objAVel">속도 (v<sub>A</sub>)</label>
+                                <span class="param-val" id="objAVelVal">5 m/s</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('objAVel', -1)">-</button>
+                                <input type="range" id="objAVel" min="-10" max="10" value="5" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('objAVel', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-frame obj-b-frame">
+                        <div class="frame-header-title obj-b-title">
+                            <span class="dot"></span>
+                            <span>물체 B (빨간색)</span>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="objBMass">질량 (m<sub>B</sub>)</label>
+                                <span class="param-val" id="objBMassVal">4 kg</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('objBMass', -1)">-</button>
+                                <input type="range" id="objBMass" min="1" max="10" value="4" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('objBMass', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="objBVel">속도 (v<sub>B</sub>)</label>
+                                <span class="param-val" id="objBVelVal">-3 m/s</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('objBVel', -1)">-</button>
+                                <input type="range" id="objBVel" min="-10" max="10" value="-3" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('objBVel', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-frame neutral-frame">
+                        <div class="frame-header-title neutral-title">
+                            <span>충돌 설정</span>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="twoBodyElasticity">반발 계수 (e)</label>
+                                <span class="param-val" id="twoBodyElasticityVal">0.6</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus"
+                                    onclick="stepValueFloat('twoBodyElasticity', -0.1)">-</button>
+                                <input type="range" id="twoBodyElasticity" min="0" max="1" step="0.1" value="0.6"
+                                    class="slider">
+                                <button class="step-btn plus"
+                                    onclick="stepValueFloat('twoBodyElasticity', 0.1)">+</button>
+                            </div>
+                        </div>
+
+                        <div class="control-group control-checkbox-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="stopObjAAfterCollision">
+                                <span class="checkbox-label">충돌 후 물체 A 정지 (강제 설정)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameters for Mode: Free Fall Drop -->
+                <div class="mode-params" id="dropParams" style="display: none;">
+                    <div class="control-frame neutral-frame">
+                        <div class="frame-header-title neutral-title">
+                            <span>낙하 조건 (동일 설정)</span>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="dropHeight">낙하 높이 (h)</label>
+                                <span class="param-val" id="dropHeightVal">3.0 m</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValueFloat('dropHeight', -0.5)">-</button>
+                                <input type="range" id="dropHeight" min="1.0" max="5.0" step="0.5" value="3.0" class="slider">
+                                <button class="step-btn plus" onclick="stepValueFloat('dropHeight', 0.5)">+</button>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="dropMass">물체 질량 (m)</label>
+                                <span class="param-val" id="dropMassVal">5 kg</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('dropMass', -1)">-</button>
+                                <input type="range" id="dropMass" min="1" max="10" value="5" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('dropMass', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-frame obj-a-frame">
+                        <div class="frame-header-title obj-a-title">
+                            <span class="dot"></span>
+                            <span>물체 A (푹신한 바닥)</span>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="dropDurationA">충돌 시간 (Δt<sub>A</sub>)</label>
+                                <span class="param-val" id="dropDurationAVal">0.50 초 (30프레임)</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('dropDurationA', -2)">-</button>
+                                <input type="range" id="dropDurationA" min="10" max="60" step="2" value="30" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('dropDurationA', 2)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-frame obj-b-frame">
+                        <div class="frame-header-title obj-b-title">
+                            <span class="dot"></span>
+                            <span>물체 B (딱딱한 바닥)</span>
+                        </div>
+                        <div class="control-group">
+                            <div class="param-header">
+                                <label for="dropDurationB">충돌 시간 (Δt<sub>B</sub>)</label>
+                                <span class="param-val" id="dropDurationBVal">0.17 초 (10프레임)</span>
+                            </div>
+                            <div class="slider-wrapper">
+                                <button class="step-btn minus" onclick="stepValue('dropDurationB', -1)">-</button>
+                                <input type="range" id="dropDurationB" min="2" max="20" step="1" value="10" class="slider">
+                                <button class="step-btn plus" onclick="stepValue('dropDurationB', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Settings -->
+                <div class="control-group">
+                    <div class="param-header">
+                        <label for="simSpeed">시뮬레이션 속도</label>
+                        <span class="param-val" id="simSpeedVal">1.0x</span>
+                    </div>
+                    <div class="slider-wrapper">
+                        <button class="step-btn minus" onclick="stepValueFloat('simSpeed', -0.1)">-</button>
+                        <input type="range" id="simSpeed" min="0.1" max="2.0" step="0.1" value="1.0" class="slider">
+                        <button class="step-btn plus" onclick="stepValueFloat('simSpeed', 0.1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Main Playback Controls in Sidebar -->
+                <div class="control-group control-playback-group">
+                    <label class="group-title">제어</label>
+                    <div class="playback-controls-row">
+                        <button class="playback-btn" id="prevBtn" title="이전 단계" aria-label="이전 단계">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+                                fill="currentColor">
+                                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                                <line x1="5" y1="19" x2="5" y2="5"></line>
+                            </svg>
+                        </button>
+                        <button class="playback-btn play-pause-btn" id="playBtn" title="재생" aria-label="재생">
+                            <svg class="play-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor"
+                                stroke-width="2" fill="currentColor">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <svg class="pause-icon" viewBox="0 0 24 24" width="22" height="22" stroke="currentColor"
+                                stroke-width="2" fill="currentColor" style="display: none;">
+                                <rect x="6" y="4" width="4" height="16"></rect>
+                                <rect x="14" y="4" width="4" height="16"></rect>
+                            </svg>
+                        </button>
+                        <button class="playback-btn" id="nextBtn" title="다음 단계" aria-label="다음 단계">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+                                fill="currentColor">
+                                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                                <line x1="19" y1="5" x2="19" y2="19"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="playback-controls-row secondary-row">
+                        <button class="btn btn-secondary btn-full" id="resetBtn">처음으로 (초기화)</button>
+                    </div>
+                </div>
+
+                <!-- Info panel with formulas -->
+                <div class="formula-card">
+                    <h3>💡 핵심 물리 공식</h3>
+                    <div class="formula-item">
+                        <span class="formula-label">운동량 (p):</span>
+                        <span class="formula-expr">p = m × v</span>
+                    </div>
+                    <div class="formula-item">
+                        <span class="formula-label">충격량 (I):</span>
+                        <span class="formula-expr">I = F × Δt = Δp</span>
+                    </div>
+                    <div class="formula-desc">
+                        충돌 시 두 물체 사이에 작용하는 힘은 크기가 같고 방향이 반대입니다. (작용-반작용)
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Sidebar Floating Toggle Button (visible when sidebar is closed) -->
+        <button class="floating-toggle-btn" id="floatingExpandBtn" style="display: none;" title="메뉴 열기"
+            aria-label="메뉴 열기">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="20" x2="6" y2="4"></line>
+                <polyline points="12 19 17 12 12 5"></polyline>
+                <line x1="17" y1="12" x2="6" y2="12"></line>
+            </svg>
+        </button>
+
+        <!-- Canvas Container -->
+        <main class="canvas-container">
+            <canvas id="simCanvas"></canvas>
+
+            <!-- Overlay Physics Stats Panel -->
+            <div class="overlay-stats" id="overlayStats">
+                <div class="stats-header" id="statsHeader">
+                    <span>실시간 물리량</span>
+                    <svg class="fold-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor"
+                        stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Dynamic stats injected here by JS -->
+                </div>
+            </div>
+
+            <!-- Canvas Zoom / Fit Controls (Floating Icons) -->
+            <div class="canvas-actions">
+                <button class="canvas-action-btn" id="zoomInBtn" title="확대" aria-label="확대">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <button class="canvas-action-btn" id="zoomOutBtn" title="축소" aria-label="축소">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <button class="canvas-action-btn" id="zoomFitBtn" title="화면 맞춤" aria-label="화면 맞춤">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12.5a9 9 0 1 0 18 0M3 12.5a9 9 0 1 1 18 0"></path>
+                        <path d="M8 12.5h8M12 8.5v8"></path>
+                    </svg>
+                </button>
+                <button class="canvas-action-btn" id="graphToggleBtn" title="힘-시간 그래프 토글" aria-label="힘-시간 그래프 토글">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Force-Time Graph Panel (Glassmorphism overlay on right/bottom) -->
+            <div class="graph-card expanded view-100" id="graphCard">
+                <div class="graph-card-header">
+                    <h3>📈 힘-시간 (F-t) 그래프</h3>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <!-- Graph View Controls -->
+                        <div class="segmented-control small" id="graphZoomControl">
+                            <button class="segment-btn small-segment active" data-zoom="100">100%</button>
+                            <button class="segment-btn small-segment" data-zoom="300">300%</button>
+                        </div>
+                        <button class="icon-btn small" id="graphFullscreenBtn" title="전체화면 보기" aria-label="전체화면 보기">
+                            <svg class="fullscreen-enter-icon" viewBox="0 0 24 24" width="16" height="16"
+                                stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+                            </svg>
+                            <svg class="fullscreen-exit-icon" viewBox="0 0 24 24" width="16" height="16"
+                                stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" style="display: none;">
+                                <path d="M4 14h6v6M20 10h-6V4M14 10l7-7M10 14l-7 7" />
+                            </svg>
+                        </button>
+                        <button class="icon-btn small" id="graphCloseBtn" title="그래프 닫기">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="graph-card-content">
+                    <canvas id="graphCanvas"></canvas>
+                    <div class="graph-legend">
+                        <div class="legend-area" id="standardLegend">
+                            <span class="legend-box" style="background: rgba(16, 185, 129, 0.2); border: 1.5px dashed #10b981;"></span>
+                            <span>면적 = 충격량 (I)</span>
+                        </div>
+                        <div class="legend-area" id="dropLegend" style="display: none;">
+                            <span class="legend-box" style="background: rgba(59, 130, 246, 0.2); border: 1.5px dashed #3b82f6; margin-right: 4px;"></span>
+                            <span style="margin-right: 12px;">A 면적 (푹신)</span>
+                            <span class="legend-box" style="background: rgba(239, 68, 68, 0.2); border: 1.5px dashed #ef4444; margin-right: 4px;"></span>
+                            <span>B 면적 (딱딱)</span>
+                        </div>
+                        <div class="legend-vals" id="graphVals">
+                            <span>I = Δp = 0.0 N·s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Playback Controls (appears when sidebar is collapsed) -->
+            <div class="floating-playback-panel" id="floatingPlayback" style="display: none;">
+                <button class="playback-btn" id="floatPrevBtn" title="이전 단계">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                        fill="currentColor">
+                        <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                        <line x1="5" y1="19" x2="5" y2="5"></line>
+                    </svg>
+                </button>
+                <button class="playback-btn play-pause-btn" id="floatPlayBtn" title="재생">
+                    <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+                        stroke-width="2" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <svg class="pause-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+                        stroke-width="2" fill="currentColor" style="display: none;">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                </button>
+                <button class="playback-btn" id="floatNextBtn" title="다음 단계">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                        fill="currentColor">
+                        <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                        <line x1="19" y1="5" x2="19" y2="19"></line>
+                    </svg>
+                </button>
+                <div class="divider"></div>
+                <button class="playback-btn" id="floatResetBtn" title="처음으로 (초기화)">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Touch guide tooltip -->
+            <div class="touch-guide" id="touchGuide">
+                <span>💡 마우스/터치 드래그로 화면 이동, 휠/핀치로 확대가 가능합니다.</span>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- Main Logic Script -->
+    <script src="script.js?v=1.0.7"></script>
+    <script>
+        // Global helper functions to link manual step buttons to sliders
+        function stepValue(id, change) {
+            const input = document.getElementById(id);
+            if (input) {
+                const newVal = parseInt(input.value) + change;
+                if (newVal >= parseInt(input.min) && newVal <= parseInt(input.max)) {
+                    input.value = newVal;
+                    input.dispatchEvent(new Event('input'));
+                }
+            }
+        }
+        function stepValueFloat(id, change) {
+            const input = document.getElementById(id);
+            if (input) {
+                const newVal = parseFloat(input.value) + change;
+                if (newVal >= parseFloat(input.min) && newVal <= parseFloat(input.max)) {
+                    input.value = newVal.toFixed(1);
+                    input.dispatchEvent(new Event('input'));
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
