@@ -634,6 +634,7 @@ body.light-theme .obj-b-frame:hover {
     height: 100%;
     background-color: var(--bg-color);
     cursor: grab;
+    touch-action: none;
 }
 
 #simCanvas:active {

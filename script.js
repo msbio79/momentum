@@ -329,6 +329,25 @@ function setupEventListeners() {
             }
         });
     }
+
+    // Prevent iOS Safari default pinch-to-zoom behavior on the document level,
+    // so only the canvas content scales, not the sidebar or overlays.
+    document.addEventListener('gesturestart', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gesturechange', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('gestureend', (e) => {
+        e.preventDefault();
+    }, { passive: false });
+
+    // Block page zoom when pinching on the document with multiple fingers
+    document.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 }
 
 // --- Canvas Resizing ---
